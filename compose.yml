@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: ./ws-frontend
+      dockerfile: Dockerfile
+    container_name: ws-frontend
+    ports:
+      - "9001:9001" # Change if your binary listens on another port
+
+  backend:
+    build:
+      context: ./ws-backend
+      dockerfile: Dockerfile
+    container_name: ws-backend
+    ports:
+      - "9001:9001" # Change if your binary listens on another port
+
+  questdb:
+    image: questdb/questdb:8.2.3
+    ports:
+      - "9000:9000"   # HTTP UI
+      - "9009:9009"   # InfluxDB Line Protocol
+      - "8812:8812"   # PostgreSQL Wire Protocol
+      - "9003:9003"   # REST API & other internal services
+    restart: unless-stopped
