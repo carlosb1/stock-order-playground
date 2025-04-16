@@ -9,12 +9,13 @@ use lazy_static::lazy_static;
 use serde_json::to_string;
 use tokio::sync::mpsc::Sender;
 use crate::models::{Candle, CoinbaseMessage, Level2, Side};
-use super::{models, Worker};
+use super::{db, models, Worker};
 
 pub struct CoinbaseWorker {
     client: WebSocketClient,
     products: Vec<String>,
-    db_config: String
+    db_config: String,
+    tick_rate: u64,
 }
 
 lazy_static! {
@@ -23,6 +24,8 @@ lazy_static! {
         "ETH-USDC".to_string()
     ];
 }
+const TICK_RATE: u64 = 1000 / 60;
+
 impl CoinbaseWorker {
     pub fn new() -> anyhow::Result<Self> {
         tracing::info!("CoinbaseWorker created");
@@ -32,14 +35,16 @@ impl CoinbaseWorker {
             .build()?;
         let products = DEFAULT_PRODUCTS.clone();
         let db_config = String::from("http::addr=localhost:9000;username=admin;password=quest;retry_timeout=20000;");
-        Ok(CoinbaseWorker{client, products, db_config})
+        Ok(CoinbaseWorker{client, products, db_config, tick_rate: TICK_RATE})
     }
     pub fn db_config(&mut self, db_config: String) {
         self.db_config = db_config
     }
-
     pub fn products(&mut self, products: Vec<String>) {
         self.products = products
+    }
+    pub fn tick_rate(&mut self, tick_rate: u64) {
+        self.tick_rate = tick_rate
     }
 }
 
@@ -85,7 +90,7 @@ async fn message_action(msg: CbResult<Message>, tx: Sender<String>, db_config: S
 
                 /*  save to db */
                 for candle in candle_updates.iter() {
-                    save_questdb_candle(candle.clone(), &db_config)?;
+                    db::save_questdb_candle(candle.clone(), &db_config)?;
                 }
             }
         }
@@ -123,7 +128,7 @@ async fn message_action(msg: CbResult<Message>, tx: Sender<String>, db_config: S
 
                 /*  save db */
                 for event in events_to_send.iter() {
-                    save_questdb_event(event.clone(), &db_config)?;
+                    db::save_questdb_event(event.clone(), &db_config)?;
                 }
 
             }, // Leverage Debug for all Message variants
@@ -141,52 +146,6 @@ async fn message_action(msg: CbResult<Message>, tx: Sender<String>, db_config: S
         Err(error) => tracing::error!("Error: {error}"), // Handle WebSocket errors
     };
 
-    Ok(())
-}
-
-fn save_questdb_candle(candle: Candle, db_config: &String) -> anyhow::Result<()> {
-    let mut sender = questdb::ingress::Sender::from_conf(
-        db_config.clone()
-    )?;
-    /* Save struct */
-    let mut buffer = questdb::ingress::Buffer::new();
-    buffer
-        .table("candles")?
-        .symbol("product_id", candle.product_id)?
-        .column_f64("open", candle.open)?
-        .column_f64("high", candle.high)?
-        .column_f64("low", candle.low)?
-        .column_f64("close", candle.close)?
-        .column_f64("volume", candle.volume)?
-        .column_ts("process_time", questdb::ingress::TimestampNanos::now())?
-        .at(questdb::ingress::TimestampNanos::new(candle.start as i64))?;
-    sender.flush(&mut buffer)?;
-    Ok(())
-}
-
-fn save_questdb_event(level2_event: Level2, db_config: &String) -> anyhow::Result<()> {
-    /* Save struct */
-    println!("level={:?}", level2_event);
-
-    let mut sender = questdb::ingress::Sender::from_conf(
-        db_config.clone()
-    )?;
-    let mut buffer = questdb::ingress::Buffer::new();
-
-    let dt: DateTime<Utc> = level2_event.event_time.parse().expect("Failed to parse datetime");
-    buffer
-        .table("events")?
-        .symbol("product_id", level2_event.product_id)?
-        .column_str("side", (
-            if level2_event.side == Side::Bid {""} else {""}).to_string()
-        )?
-        .column_f64("price_level", level2_event.price_level)?
-        .column_f64("new_quantity", level2_event.new_quantity)?
-        .column_ts("process_time", questdb::ingress::TimestampNanos::now())?
-        .at(questdb::ingress::TimestampNanos::new(dt.timestamp_nanos_opt().unwrap()))?;
-
-
-    sender.flush(&mut buffer)?;
     Ok(())
 }
 
@@ -217,7 +176,7 @@ impl Worker for CoinbaseWorker {
             .unsubscribe(&Channel::Status, &self.products)
             .await
             .unwrap();
-        const TICK_RATE: u64 = 1000 / 60;
+
         let mut last_tick = Instant::now();
         let mut stream: EndpointStream = readers.into();
 
@@ -230,10 +189,10 @@ impl Worker for CoinbaseWorker {
             // Calculate the time since the last tick and sleep for the remaining time to hit the tick rate.
             let last_tick_ms = last_tick.elapsed().as_millis();
             let timeout = match u64::try_from(last_tick_ms) {
-                Ok(ms) => TICK_RATE.saturating_sub(ms),
+                Ok(ms) => self.tick_rate.saturating_sub(ms),
                 Err(why) => {
                     tracing::error!("Conversion error: {why}");
-                    TICK_RATE
+                    self.tick_rate
                 }
             };
 

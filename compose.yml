@@ -3,19 +3,29 @@ version: '3.9'
 services:
   frontend:
     build:
-      context: ./ws-frontend
+      context: ./frontend
       dockerfile: Dockerfile
-    container_name: ws-frontend
+    container_name: frontend
     ports:
-      - "9001:9001" # Change if your binary listens on another port
+      - "${FRONTEND_PORT:-8501}:8501" # Change if your binary listens on another port
+    environment:
+      - WS_SERVER_HOST=${WS_SERVER_HOST}
+      - WS_SERVER_PORT=${WS_SERVER_PORT}
+      - QUESTDB_CONFIG=${QUESTDB_CONFIG}
+      - PRODUCT_IDS=${PRODUCT_IDS}
 
   backend:
     build:
-      context: ./ws-backend
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: ws-backend
+    container_name: backend
     ports:
-      - "9001:9001" # Change if your binary listens on another port
+      - "${WS_SERVER_PORT:-9001}:9001" # Change if your binary listens on another port
+    environment:
+      - WS_SERVER_HOST=${WS_SERVER_HOST}
+      - WS_SERVER_PORT=${WS_SERVER_PORT}
+      - QUESTDB_CONFIG=${QUESTDB_CONFIG}
+      - PRODUCT_IDS=${PRODUCT_IDS}
 
   questdb:
     image: questdb/questdb:8.2.3

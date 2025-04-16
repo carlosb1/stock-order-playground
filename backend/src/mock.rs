@@ -8,13 +8,12 @@ pub struct MockWorker;
 #[async_trait::async_trait(?Send)]
 impl Worker for MockWorker {
     async fn do_work(&mut self, id: usize, tx_cloned: Sender<String>) {
-        println!("Task {} starting...", id);
-        for count in 0..100 {
+        tracing::debug!("Task {} starting...", id);
+        loop {
             // Simulate some work
-            println!("Task {} doing work...", id);
-            sleep(Duration::from_millis(1000)).await;
-            tx_cloned.send(format!("Task {} data! {}", id, count)).await.unwrap();
+            tracing::debug!("Task {} doing work...", id);
+            sleep(Duration::from_millis(30000)).await;
+            tx_cloned.send("{I am live!}".to_string()).await.unwrap();
         }
-        println!("Task {} done!", id);
     }
 }

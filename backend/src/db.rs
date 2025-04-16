@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use crate::models::{Candle, Level2, Side};
+use crate::models::{BinanceDepthUpdate, Candle, Level2, Side};
 
 pub fn save_questdb_candle(candle: Candle, db_config: &String) -> anyhow::Result<()> {
     let mut sender = questdb::ingress::Sender::from_conf(
@@ -23,7 +23,7 @@ pub fn save_questdb_candle(candle: Candle, db_config: &String) -> anyhow::Result
 
 pub fn save_questdb_event(level2_event: Level2, db_config: &String) -> anyhow::Result<()> {
     /* Save struct */
-    println!("level={:?}", level2_event);
+    tracing::debug!("level={:?}", level2_event);
 
     let mut sender = questdb::ingress::Sender::from_conf(
         db_config.clone()
@@ -43,6 +43,24 @@ pub fn save_questdb_event(level2_event: Level2, db_config: &String) -> anyhow::R
         .at(questdb::ingress::TimestampNanos::new(dt.timestamp_nanos_opt().unwrap()))?;
 
 
+    sender.flush(&mut buffer)?;
+    Ok(())
+}
+
+pub fn save_questdb_binance_depth(binance_update: BinanceDepthUpdate, db_config: &String) -> anyhow::Result<()> {
+    /* Save struct */
+    tracing::debug!("binance={:?}", binance_update);
+
+    let mut sender = questdb::ingress::Sender::from_conf(
+        db_config.clone()
+    )?;
+
+    let mut buffer = questdb::ingress::Buffer::new();
+
+    buffer.table("binance_depth")?.column_i64("u", binance_update.u as i64)?
+        .column_str("bid_json", serde_json::to_string(&binance_update.b)?)?
+        .column_str("ask_json", serde_json::to_string(&binance_update.a)?)?
+        .at(questdb::ingress::TimestampNanos::now())?;
     sender.flush(&mut buffer)?;
     Ok(())
 }

@@ -8,6 +8,7 @@ pub enum CoinbaseMessage {
     Snapshot(Vec<Candle>),
     Update(Candle),
     Level2(Vec<Level2>),
+    BinanceDepthUpdate(BinanceDepthUpdate),
     Other(String)
 }
 
@@ -46,6 +47,13 @@ impl fmt::Display for Side {
         };
         write!(f, "{}", s)
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BinanceDepthUpdate {
+    pub u: u64,
+    pub b: Vec<[String; 2]>, // bids
+    pub a: Vec<[String; 2]>, // asks
 }
 
 impl TryFrom<CandleUpdate> for Candle {
