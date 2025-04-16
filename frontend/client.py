@@ -134,10 +134,11 @@ if not st.session_state.message_queue.empty():
 
 # Show the data
 st.title("📡 Real-Time WebSocket Stream")
-st.table(st.session_state.table_data_eth)
-st.table(st.session_state.table_data_btc)
-st.table(st.session_state.table_data_other)
 st.subheader("Bids (Buy Orders)")
 st.dataframe(st.session_state.table_data_bids)
 st.subheader("Asks (Sell Orders)")
 st.dataframe(st.session_state.table_data_asks)
+
+st.table(st.session_state.table_data_eth)
+st.table(st.session_state.table_data_btc)
+st.table(st.session_state.table_data_other)
