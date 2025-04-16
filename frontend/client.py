@@ -128,11 +128,9 @@ if not st.session_state.message_queue.empty():
                     elif ident == "ETH-USD":
                         st.session_state.table_data_eth = pd.json_normalize(snapshot)
             else:
-                pass
-                # st.session_state.table_data_other = pd.json_normalize(json_loaded)
+                st.session_state.table_data_other = pd.json_normalize(json_loaded)
         else:
-            pass
-            # st.session_state.table_data_other = pd.json_normalize(json_loaded)
+            st.session_state.table_data_other = pd.json_normalize(json_loaded)
 
 # Show the data
 st.title("📡 Real-Time WebSocket Stream")
