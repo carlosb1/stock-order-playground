@@ -41,3 +41,6 @@ tzdata==2025.2
 urllib3==2.3.0
 watchdog==6.0.0
 websockets==15.0.1
+scipy==1.15.2
+plotly==6.0.1
+dotenv==0.9.9

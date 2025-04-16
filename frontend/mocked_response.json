@@ -1,0 +1,904 @@
+{
+  "Snapshot": [
+    {
+      "product_id": "BTC-USD",
+      "start": 1744620300,
+      "open": 84799.1,
+      "high": 84952.78,
+      "low": 84746.17,
+      "close": 84753.98,
+      "volume": 26.07201378
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744622400,
+      "open": 84785.96,
+      "high": 84799.73,
+      "low": 84609.05,
+      "close": 84616.04,
+      "volume": 8.51977757
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744626300,
+      "open": 84491.14,
+      "high": 84647.92,
+      "low": 84472.12,
+      "close": 84619.57,
+      "volume": 15.38463303
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744627800,
+      "open": 84726.8,
+      "high": 84809.27,
+      "low": 84667.59,
+      "close": 84697.56,
+      "volume": 10.53072814
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744628700,
+      "open": 84569.42,
+      "high": 84820.0,
+      "low": 84569.41,
+      "close": 84754.45,
+      "volume": 4.6254059
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744635000,
+      "open": 85176.52,
+      "high": 85217.5,
+      "low": 85100.0,
+      "close": 85108.71,
+      "volume": 16.92933911
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744637100,
+      "open": 84996.37,
+      "high": 85072.51,
+      "low": 84934.46,
+      "close": 84935.68,
+      "volume": 18.34420344
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744642800,
+      "open": 85431.75,
+      "high": 85475.02,
+      "low": 84793.8,
+      "close": 84818.77,
+      "volume": 88.72626948
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744644600,
+      "open": 84545.42,
+      "high": 84752.13,
+      "low": 84479.3,
+      "close": 84744.29,
+      "volume": 28.2194299
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744646700,
+      "open": 84282.92,
+      "high": 84369.25,
+      "low": 84000.0,
+      "close": 84000.0,
+      "volume": 25.49156123
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744647900,
+      "open": 84324.18,
+      "high": 84335.25,
+      "low": 84115.89,
+      "close": 84206.4,
+      "volume": 19.09742419
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744649700,
+      "open": 84502.31,
+      "high": 84535.24,
+      "low": 84329.45,
+      "close": 84342.77,
+      "volume": 24.97873367
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744650900,
+      "open": 84418.86,
+      "high": 84424.91,
+      "low": 84201.6,
+      "close": 84363.66,
+      "volume": 33.57891974
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744655400,
+      "open": 84906.29,
+      "high": 84966.22,
+      "low": 84819.8,
+      "close": 84951.92,
+      "volume": 28.87686193
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744656600,
+      "open": 84900.58,
+      "high": 84925.73,
+      "low": 84772.92,
+      "close": 84918.43,
+      "volume": 49.29992016
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744659300,
+      "open": 84986.54,
+      "high": 85100.0,
+      "low": 84924.7,
+      "close": 85093.9,
+      "volume": 25.80779573
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744659900,
+      "open": 85029.64,
+      "high": 85049.68,
+      "low": 84900.0,
+      "close": 84972.95,
+      "volume": 38.30395002
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744660800,
+      "open": 84929.72,
+      "high": 84982.25,
+      "low": 84839.43,
+      "close": 84898.01,
+      "volume": 30.12862822
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744661700,
+      "open": 84804.13,
+      "high": 84847.9,
+      "low": 84709.31,
+      "close": 84809.4,
+      "volume": 29.97594424
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744664100,
+      "open": 84869.1,
+      "high": 84939.99,
+      "low": 84808.02,
+      "close": 84853.69,
+      "volume": 23.66146616
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744664700,
+      "open": 84785.26,
+      "high": 84786.06,
+      "low": 84708.13,
+      "close": 84708.13,
+      "volume": 13.85211776
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744667700,
+      "open": 84720.09,
+      "high": 84770.47,
+      "low": 84682.27,
+      "close": 84710.42,
+      "volume": 21.8128007
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744668600,
+      "open": 84653.94,
+      "high": 84759.76,
+      "low": 84559.04,
+      "close": 84578.81,
+      "volume": 26.55909316
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744669500,
+      "open": 84544.64,
+      "high": 84613.11,
+      "low": 84453.04,
+      "close": 84492.25,
+      "volume": 27.19258337
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744671300,
+      "open": 84552.62,
+      "high": 84567.47,
+      "low": 84472.89,
+      "close": 84503.16,
+      "volume": 12.15686985
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744671600,
+      "open": 84503.15,
+      "high": 84599.67,
+      "low": 84470.8,
+      "close": 84513.08,
+      "volume": 10.55258082
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744673400,
+      "open": 84641.74,
+      "high": 84710.12,
+      "low": 84625.65,
+      "close": 84653.84,
+      "volume": 8.52052431
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744673700,
+      "open": 84653.83,
+      "high": 84744.98,
+      "low": 84633.02,
+      "close": 84685.92,
+      "volume": 14.38054379
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744674600,
+      "open": 84538.07,
+      "high": 84552.77,
+      "low": 84473.36,
+      "close": 84489.94,
+      "volume": 6.02529679
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744676100,
+      "open": 84453.49,
+      "high": 84491.67,
+      "low": 84345.8,
+      "close": 84371.59,
+      "volume": 9.48203563
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744677300,
+      "open": 84715.98,
+      "high": 84875.56,
+      "low": 84640.37,
+      "close": 84818.79,
+      "volume": 14.29870153
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744677600,
+      "open": 84820.65,
+      "high": 84865.11,
+      "low": 84758.2,
+      "close": 84774.48,
+      "volume": 18.47284526
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744678500,
+      "open": 84863.12,
+      "high": 84940.33,
+      "low": 84800.21,
+      "close": 84908.73,
+      "volume": 22.15040898
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744678800,
+      "open": 84913.89,
+      "high": 84940.5,
+      "low": 84774.27,
+      "close": 84792.03,
+      "volume": 10.9826209
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744680300,
+      "open": 84861.26,
+      "high": 84933.23,
+      "low": 84846.64,
+      "close": 84919.17,
+      "volume": 10.31740392
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744680600,
+      "open": 84919.14,
+      "high": 85127.6,
+      "low": 84914.94,
+      "close": 85014.9,
+      "volume": 38.32592285
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744680900,
+      "open": 85014.91,
+      "high": 85065.33,
+      "low": 84803.5,
+      "close": 84893.71,
+      "volume": 17.26529232
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744681200,
+      "open": 84893.71,
+      "high": 85005.16,
+      "low": 84869.27,
+      "close": 85005.15,
+      "volume": 18.75221321
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744682400,
+      "open": 84979.98,
+      "high": 85093.75,
+      "low": 84921.93,
+      "close": 85080.99,
+      "volume": 20.61577855
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744682700,
+      "open": 85084.08,
+      "high": 85149.99,
+      "low": 84989.07,
+      "close": 85137.4,
+      "volume": 16.05366775
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744683600,
+      "open": 85006.66,
+      "high": 85038.08,
+      "low": 84849.93,
+      "close": 84923.57,
+      "volume": 26.65730721
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744685100,
+      "open": 84851.91,
+      "high": 84912.25,
+      "low": 84809.73,
+      "close": 84905.49,
+      "volume": 8.60492569
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744686300,
+      "open": 85110.87,
+      "high": 85238.7,
+      "low": 85083.83,
+      "close": 85136.03,
+      "volume": 14.96758406
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744686900,
+      "open": 85133.47,
+      "high": 85201.35,
+      "low": 85121.57,
+      "close": 85128.58,
+      "volume": 6.61417283
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744687800,
+      "open": 85224.63,
+      "high": 85371.11,
+      "low": 85220.97,
+      "close": 85346.0,
+      "volume": 19.66338452
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744688100,
+      "open": 85345.99,
+      "high": 85371.11,
+      "low": 85290.4,
+      "close": 85329.8,
+      "volume": 12.1177309
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744688400,
+      "open": 85329.8,
+      "high": 85405.99,
+      "low": 85189.33,
+      "close": 85285.05,
+      "volume": 30.90450141
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744689300,
+      "open": 85263.95,
+      "high": 85391.17,
+      "low": 85255.41,
+      "close": 85369.75,
+      "volume": 4.10799091
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744689900,
+      "open": 85346.48,
+      "high": 85346.82,
+      "low": 85190.26,
+      "close": 85250.07,
+      "volume": 9.16106421
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744690800,
+      "open": 85315.11,
+      "high": 85318.12,
+      "low": 85166.44,
+      "close": 85175.19,
+      "volume": 8.86045633
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744691700,
+      "open": 85250.12,
+      "high": 85302.28,
+      "low": 85206.06,
+      "close": 85258.03,
+      "volume": 8.38933263
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744692300,
+      "open": 85323.1,
+      "high": 85404.99,
+      "low": 85280.77,
+      "close": 85366.77,
+      "volume": 10.71214546
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744692600,
+      "open": 85366.77,
+      "high": 85443.98,
+      "low": 85299.65,
+      "close": 85414.44,
+      "volume": 13.11515476
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744692900,
+      "open": 85414.43,
+      "high": 85504.55,
+      "low": 85407.83,
+      "close": 85478.51,
+      "volume": 19.42381752
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744694100,
+      "open": 85645.49,
+      "high": 85684.79,
+      "low": 85615.39,
+      "close": 85667.91,
+      "volume": 8.05539181
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744694400,
+      "open": 85667.96,
+      "high": 85729.06,
+      "low": 85624.03,
+      "close": 85691.43,
+      "volume": 14.40267265
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744695300,
+      "open": 85561.71,
+      "high": 85866.26,
+      "low": 85561.49,
+      "close": 85791.87,
+      "volume": 29.04563598
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744695600,
+      "open": 85791.88,
+      "high": 85842.89,
+      "low": 85737.26,
+      "close": 85780.45,
+      "volume": 13.22148722
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744695900,
+      "open": 85780.45,
+      "high": 85801.71,
+      "low": 85660.36,
+      "close": 85664.4,
+      "volume": 18.46768071
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744696200,
+      "open": 85660.39,
+      "high": 85691.78,
+      "low": 85555.72,
+      "close": 85617.45,
+      "volume": 16.67235505
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744696500,
+      "open": 85617.45,
+      "high": 85652.63,
+      "low": 85522.69,
+      "close": 85522.69,
+      "volume": 5.43525981
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744696800,
+      "open": 85525.61,
+      "high": 85554.11,
+      "low": 85451.26,
+      "close": 85494.64,
+      "volume": 8.52127551
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744697100,
+      "open": 85494.65,
+      "high": 85681.84,
+      "low": 85491.48,
+      "close": 85492.92,
+      "volume": 6.87438331
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744697400,
+      "open": 85492.91,
+      "high": 85512.31,
+      "low": 85437.34,
+      "close": 85480.92,
+      "volume": 11.73805529
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744697700,
+      "open": 85492.77,
+      "high": 85540.87,
+      "low": 85473.5,
+      "close": 85510.67,
+      "volume": 5.1525976
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744698000,
+      "open": 85510.66,
+      "high": 85510.66,
+      "low": 85357.53,
+      "close": 85422.75,
+      "volume": 4.45005779
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744698300,
+      "open": 85417.97,
+      "high": 85549.57,
+      "low": 85412.81,
+      "close": 85524.75,
+      "volume": 4.85059303
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744698600,
+      "open": 85524.75,
+      "high": 85672.39,
+      "low": 85524.75,
+      "close": 85563.22,
+      "volume": 13.57668773
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744698900,
+      "open": 85563.22,
+      "high": 85571.28,
+      "low": 85461.16,
+      "close": 85533.47,
+      "volume": 4.98757115
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744699500,
+      "open": 85481.76,
+      "high": 85493.31,
+      "low": 85421.5,
+      "close": 85438.87,
+      "volume": 6.12277018
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744699800,
+      "open": 85438.86,
+      "high": 85479.4,
+      "low": 85352.92,
+      "close": 85352.93,
+      "volume": 3.9249581
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744700100,
+      "open": 85352.92,
+      "high": 85401.26,
+      "low": 85336.6,
+      "close": 85378.47,
+      "volume": 8.50754367
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744700400,
+      "open": 85380.63,
+      "high": 85569.85,
+      "low": 85380.63,
+      "close": 85559.31,
+      "volume": 13.17755483
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744700700,
+      "open": 85559.3,
+      "high": 85621.75,
+      "low": 85489.49,
+      "close": 85540.17,
+      "volume": 16.55921025
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744701300,
+      "open": 85519.2,
+      "high": 85647.02,
+      "low": 85517.72,
+      "close": 85629.45,
+      "volume": 8.25713744
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744701600,
+      "open": 85629.44,
+      "high": 85784.79,
+      "low": 85629.44,
+      "close": 85749.12,
+      "volume": 13.49912953
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744701900,
+      "open": 85744.52,
+      "high": 85760.43,
+      "low": 85682.97,
+      "close": 85696.14,
+      "volume": 10.68416618
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744702200,
+      "open": 85698.52,
+      "high": 85749.2,
+      "low": 85676.95,
+      "close": 85688.87,
+      "volume": 8.06257103
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744702500,
+      "open": 85688.87,
+      "high": 85713.29,
+      "low": 85624.51,
+      "close": 85673.83,
+      "volume": 8.05451123
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744702800,
+      "open": 85679.1,
+      "high": 85704.98,
+      "low": 85668.04,
+      "close": 85703.03,
+      "volume": 6.45545265
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744703100,
+      "open": 85702.72,
+      "high": 85703.85,
+      "low": 85641.11,
+      "close": 85651.58,
+      "volume": 7.77171288
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744703400,
+      "open": 85651.58,
+      "high": 85691.9,
+      "low": 85633.43,
+      "close": 85691.9,
+      "volume": 6.08008006
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744703700,
+      "open": 85691.9,
+      "high": 85748.49,
+      "low": 85650.61,
+      "close": 85747.04,
+      "volume": 11.09895148
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744704000,
+      "open": 85744.3,
+      "high": 85816.14,
+      "low": 85668.47,
+      "close": 85787.37,
+      "volume": 38.5555458
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744704300,
+      "open": 85789.75,
+      "high": 85845.0,
+      "low": 85761.35,
+      "close": 85795.61,
+      "volume": 38.35808553
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744704600,
+      "open": 85797.85,
+      "high": 85914.28,
+      "low": 85775.51,
+      "close": 85864.14,
+      "volume": 33.59068846
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744704900,
+      "open": 85864.14,
+      "high": 85992.21,
+      "low": 85864.14,
+      "close": 85969.24,
+      "volume": 17.46796834
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744705500,
+      "open": 85912.7,
+      "high": 85912.7,
+      "low": 85838.13,
+      "close": 85852.0,
+      "volume": 8.53012139
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744705800,
+      "open": 85854.11,
+      "high": 85904.71,
+      "low": 85743.75,
+      "close": 85789.82,
+      "volume": 13.33960562
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744706700,
+      "open": 85883.75,
+      "high": 85929.31,
+      "low": 85852.08,
+      "close": 85865.4,
+      "volume": 11.52929556
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744707000,
+      "open": 85865.41,
+      "high": 85886.27,
+      "low": 85794.27,
+      "close": 85800.0,
+      "volume": 27.22890863
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744707300,
+      "open": 85799.99,
+      "high": 85849.82,
+      "low": 85756.19,
+      "close": 85841.24,
+      "volume": 5.36264352
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744707600,
+      "open": 85841.22,
+      "high": 85866.97,
+      "low": 85754.34,
+      "close": 85862.19,
+      "volume": 8.85872247
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744707900,
+      "open": 85861.41,
+      "high": 85948.01,
+      "low": 85836.16,
+      "close": 85948.01,
+      "volume": 11.56795176
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744708200,
+      "open": 85936.55,
+      "high": 85938.08,
+      "low": 85797.92,
+      "close": 85870.89,
+      "volume": 68.22896415
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744708500,
+      "open": 85867.87,
+      "high": 85954.89,
+      "low": 85866.77,
+      "close": 85897.66,
+      "volume": 12.58482844
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744708800,
+      "open": 85897.66,
+      "high": 85949.06,
+      "low": 85878.34,
+      "close": 85917.76,
+      "volume": 13.26527792
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744709100,
+      "open": 85917.76,
+      "high": 85918.61,
+      "low": 85839.75,
+      "close": 85855.59,
+      "volume": 10.67957001
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744709400,
+      "open": 85855.61,
+      "high": 85864.66,
+      "low": 85659.85,
+      "close": 85684.47,
+      "volume": 12.21223552
+    },
+    {
+      "product_id": "BTC-USD",
+      "start": 1744709700,
+      "open": 85684.48,
+      "high": 85699.35,
+      "low": 85584.89,
+      "close": 85675.86,
+      "volume": 6.8621997
+    }
+  ]
+}
