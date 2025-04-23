@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import asyncio
@@ -20,9 +22,41 @@ def is_json(myjson):
         return False
     return True
 
+    # Estilos condicionales
+
+
+def style_row(row):
+    styles = ["color: black; border: 1px solid #ccc"] * len(row)
+    if row["Match"]:
+        styles = [
+            "background-color: #fff799; color: black; font-weight: bold; border: 1px solid #666"
+        ] * len(row)
+    else:
+        if pd.notnull(row["Bid Quantity"]):
+            i = row.index.get_loc("Bid Quantity")
+            styles[i] = (
+                "background-color: #d4f7d4; color: black; border: 1px solid #ccc"
+            )
+        if pd.notnull(row["Bid Price"]):
+            i = row.index.get_loc("Bid Price")
+            styles[i] = (
+                "background-color: #d4f7d4; color: black; border: 1px solid #ccc"
+            )
+        if pd.notnull(row["Ask Quantity"]):
+            i = row.index.get_loc("Ask Quantity")
+            styles[i] = (
+                "background-color: #f7d4d4; color: black; border: 1px solid #ccc"
+            )
+        if pd.notnull(row["Ask Price"]):
+            i = row.index.get_loc("Ask Price")
+            styles[i] = (
+                "background-color: #f7d4d4; color: black; border: 1px solid #ccc"
+            )
+    return styles
+
 
 # Refresh every second
-st_autorefresh(interval=50, key="ws_refresher")
+st_autorefresh(interval=1000, key="ws_refresher")
 
 # Global queue to communicate between threads
 if (
@@ -46,6 +80,9 @@ if (
 if "message_queue" not in st.session_state:
     st.session_state.message_queue = queue.Queue()
 
+if "styled_order_book" not in st.session_state:
+    st.session_state.styled_order_book = pd.DataFrame()
+
 
 def start_ws_client(q):
     ws_server_host = os.getenv("WS_SERVER_HOST")
@@ -53,19 +90,28 @@ def start_ws_client(q):
     assert ws_server_host and ws_server_port
 
     async def ws_loop():
-        print(f"ws server port: {ws_server_host}")
-        print(f"ws server host: {ws_server_port}")
-        uri = f"ws://{ws_server_host}:{ws_server_port}"
-        try:
-            async with websockets.connect(uri) as websocket:
-                while True:
-                    message = await websocket.recv()
-                    if is_json(str(message)):
-                        q.put(str(message))
-                    else:
-                        print(f"discarding -->{message}")
-        except Exception as e:
-            q.put(f"Connection error: {e}")
+        while True:
+            print(f"ws server port: {ws_server_host}")
+            print(f"ws server host: {ws_server_port}")
+            uri = f"ws://{ws_server_host}:{ws_server_port}"
+            try:
+                async with websockets.connect(uri) as websocket:
+                    # TODO  set up logic for choose type of book order!ccc
+                    start = datetime.now()
+                    while True:
+                        stop = datetime.now()
+                        if stop - start > timedelta(seconds=20):
+                            print("Sending ping message")
+                            await websocket.send("ping")
+                            start = datetime.now()
+                        message = await websocket.recv()
+                        if is_json(str(message)):
+                            q.put(str(message))
+                        else:
+                            print(f"discarding -->{message}")
+
+            except Exception as e:
+                print(f"Connection error: {e}")
 
     asyncio.new_event_loop().run_until_complete(ws_loop())
 
@@ -85,6 +131,7 @@ if not st.session_state.message_queue.empty():
     except Exception as e:
         print("it is not parsing json")
         st.warning(st.session_state.ws_data)
+        print(st.session_state.ws_data)
     else:
         # binance data
         if "BinanceDepthUpdate" in json_loaded:
@@ -111,11 +158,7 @@ if not st.session_state.message_queue.empty():
                 st.session_state.table_data_asks.sort_values(by="Price", ascending=True)
             )
 
-            # Display update identifier
-            # Display tables
-
-        # coinbase check
-        if "Snapshot" in json_loaded:
+        elif "Snapshot" in json_loaded:
             snapshot = json_loaded["Snapshot"]
             if len(snapshot) > 0:
                 first_elem = snapshot[0]
@@ -134,11 +177,62 @@ if not st.session_state.message_queue.empty():
 
 # Show the data
 st.title("📡 Real-Time WebSocket Stream")
-st.subheader("Bids (Buy Orders)")
-st.dataframe(st.session_state.table_data_bids)
-st.subheader("Asks (Sell Orders)")
-st.dataframe(st.session_state.table_data_asks)
 
-st.table(st.session_state.table_data_eth)
-st.table(st.session_state.table_data_btc)
+# Unificar order book (asks y bids) en una sola tabla
+merged_order_book = pd.merge(
+    st.session_state.table_data_bids.rename(
+        columns={"Price": "Bid Price", "Quantity": "Bid Quantity"}
+    ),
+    st.session_state.table_data_asks.rename(
+        columns={"Price": "Ask Price", "Quantity": "Ask Quantity"}
+    ),
+    how="outer",
+    left_index=True,
+    right_index=True,
+)
+
+if "Bid Price" in merged_order_book and "Ask Price" in merged_order_book:
+    # Ordenar por precio (de mayor a menor para bids, menor a mayor para asks)
+    merged_order_book = merged_order_book.sort_values(
+        by=["Bid Price", "Ask Price"], ascending=[False, True], na_position="last"
+    )
+
+    # Unificar order book (asks y bids) en una sola tabla
+    # Detectar match
+    def detect_match(row):
+        return (
+            pd.notnull(row["Bid Price"])
+            and pd.notnull(row["Ask Price"])
+            and row["Bid Price"] >= row["Ask Price"]
+        )
+
+    merged_order_book["Match"] = merged_order_book.apply(detect_match, axis=1)
+
+    # Aplicar estilo por fila
+    styled_order_book = merged_order_book.style.apply(style_row, axis=1).format(
+        {
+            "Bid Price": "{:.2f}",
+            "Ask Price": "{:.2f}",
+            "Bid Quantity": "{:.6f}",
+            "Ask Quantity": "{:.6f}",
+        }
+    )
+    st.session_state.styled_order_book = styled_order_book
+
+
+# Show table
+st.title("📘 Unified Order Book with Match Highlighting")
+
+
+st.dataframe(st.session_state.styled_order_book, use_container_width=True)
+
+
+# st.subheader("Bids (Buy Orders)")
+# st.dataframe(st.session_state.table_data_bids)
+# st.subheader("Asks (Sell Orders)")
+# st.dataframe(st.session_state.table_data_asks)
+
+# st.table(st.session_state.table_data_eth)
+# st.table(st.session_state.table_data_btc)
+st.subheader("Unknown data")
 st.table(st.session_state.table_data_other)
