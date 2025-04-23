@@ -60,7 +60,7 @@ impl Worker for BinanceWorker {
             match msg {
                 Ok(msg) => {
                     if msg.is_text() {
-                        tracing::debug!("📥 Received message: {:?}", msg.clone());
+                        //tracing::debug!("📥 Received message: {:?}", msg.clone());
 
                         if let Ok(update) =
                             serde_json::from_str::<BinanceDepthUpdate>(&msg.to_text().unwrap())

@@ -131,7 +131,7 @@ fn fetch_save_db(questdb_config: &String, mut rx: Receiver<String>) {
                     batch.push(data);
                     if batch.len() >= 100 {
                         if let Err(e) = inflush_binance_depth(&batch, &mut client).await {
-                            eprintln!("Error flushing batch: {e}");
+                            tracing::error!("Error flushing batch: {e}");
                         }
                         batch.clear();
                     }
@@ -139,7 +139,7 @@ fn fetch_save_db(questdb_config: &String, mut rx: Receiver<String>) {
                 _ = interval.tick() => {
                     if !batch.is_empty() {
                         if let Err(e) = inflush_binance_depth(&batch, &mut client).await {
-                            eprintln!("Error flushing batch: {e}");
+                            tracing::error!("Error flushing batch: {e}");
                         }
                         batch.clear();
                     }
@@ -159,7 +159,7 @@ fn run_ml(mut rx: Receiver<String>, mut tx: broadcast::Sender<String>) {
                     batch.push(data);
                     if batch.len() >= 100 {
                         if let Err(e) = run_ml_inter(&batch, tx.clone()).await {
-                            eprintln!("Error flushing batch: {e}");
+                            tracing::error!("ml error: {e}");
                         }
                         batch.clear();
                     }
@@ -167,7 +167,7 @@ fn run_ml(mut rx: Receiver<String>, mut tx: broadcast::Sender<String>) {
                 _ = interval.tick() => {
                     if !batch.is_empty() {
                         if let Err(e) = run_ml_inter(&batch, tx.clone()).await {
-                            eprintln!("Error flushing batch: {e}");
+                            tracing::error!("ml error {e}");
                         }
                         batch.clear();
                     }
