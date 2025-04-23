@@ -26,6 +26,7 @@ services:
       - WS_SERVER_PORT=${WS_SERVER_PORT}
       - QUESTDB_CONFIG=${QUESTDB_CONFIG}
       - PRODUCT_IDS=${PRODUCT_IDS}
+      - RUST_LOG=${RUST_LOG:-info}
 
   questdb:
     image: questdb/questdb:8.2.3

@@ -1,16 +1,12 @@
+use chrono::Utc;
 use questdb::{
     Result,
-    ingress::{
-        Sender,
-        Buffer,
-        TimestampNanos
-    },
+    ingress::{Buffer, Sender, TimestampNanos},
 };
-use chrono::Utc;
 
 fn main() -> Result<()> {
     let mut sender = Sender::from_conf(
-        "http::addr=localhost:9000;username=admin;password=quest;retry_timeout=20000;"
+        "http::addr=localhost:9000;username=admin;password=quest;retry_timeout=20000;",
     )?;
     let mut buffer = Buffer::new();
     let current_datetime = Utc::now();

@@ -1,15 +1,19 @@
 use std::convert::TryFrom;
 use std::fmt;
+
 use cbadv::models::websocket::CandleUpdate;
-use serde::{Deserialize, Serialize};
 use cbadv::models::websocket::Level2Update;
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CoinbaseMessage {
     Snapshot(Vec<Candle>),
     Update(Candle),
     Level2(Vec<Level2>),
     BinanceDepthUpdate(BinanceDepthUpdate),
-    Other(String)
+    Ping(),
+    Pong(),
+    Other(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,6 +52,11 @@ impl fmt::Display for Side {
         write!(f, "{}", s)
     }
 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum BinanceMessage {
+    DepthUpdate(BinanceDepthUpdate),
+    Other,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BinanceDepthUpdate {
@@ -59,20 +68,30 @@ pub struct BinanceDepthUpdate {
 impl TryFrom<CandleUpdate> for Candle {
     type Error = &'static str;
     fn try_from(candle_update: CandleUpdate) -> Result<Self, Self::Error> {
-        Ok(Candle { product_id: candle_update.product_id, start: candle_update.data.start
-            , open: candle_update.data.open
-            , high: candle_update.data.high
-            , low: candle_update.data.low
-            , close: candle_update.data.close
-            , volume: candle_update.data.volume })
+        Ok(Candle {
+            product_id: candle_update.product_id,
+            start: candle_update.data.start,
+            open: candle_update.data.open,
+            high: candle_update.data.high,
+            low: candle_update.data.low,
+            close: candle_update.data.close,
+            volume: candle_update.data.volume,
+        })
     }
 }
 
 impl Level2 {
     pub fn from_with_product_id(product_id: String, level2: Level2Update) -> Result<Self, String> {
-        Ok(Level2 { product_id
-            , side: if level2.side == cbadv::models::websocket::Level2Side::Bid { Side::Bid } else { Side::Ask }
-            , event_time: level2.event_time, price_level: level2.price_level
-            , new_quantity: level2.new_quantity })
+        Ok(Level2 {
+            product_id,
+            side: if level2.side == cbadv::models::websocket::Level2Side::Bid {
+                Side::Bid
+            } else {
+                Side::Ask
+            },
+            event_time: level2.event_time,
+            price_level: level2.price_level,
+            new_quantity: level2.new_quantity,
+        })
     }
 }

@@ -6,17 +6,16 @@
 //! - Subscribe to channels.
 //! - Unsubscribe to channels.
 
-use tokio::sync::mpsc;
-use ws_backend::coinbase::CoinbaseWorker;
+use tokio::sync::broadcast;
 use ws_backend::Worker;
+use ws_backend::coinbase::CoinbaseWorker;
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .init();
-    let buffer_queue_window =1000;
-    let (tx,  rx) = mpsc::channel::<String>(buffer_queue_window);
+    let (multi_tx, _) = broadcast::channel::<String>(16);
     let mut worker = CoinbaseWorker::new().unwrap();
-    worker.do_work(1,tx.clone()).await;
+    worker.do_work(1, multi_tx.clone()).await;
 }
