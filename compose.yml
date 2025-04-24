@@ -24,9 +24,20 @@ services:
     environment:
       - WS_SERVER_HOST=${WS_SERVER_HOST}
       - WS_SERVER_PORT=${WS_SERVER_PORT}
+      - ENDPOINT_ZMQ=${ENDPOINT_ZMQ}
       - QUESTDB_CONFIG=${QUESTDB_CONFIG}
       - PRODUCT_IDS=${PRODUCT_IDS}
       - RUST_LOG=${RUST_LOG:-info}
+
+  ml:
+    build:
+      context: ./bc-ml-trading/bc-ml-trading
+      dockerfile: Dockerfile
+    container_name: ml
+    ports:
+      - "${ZMQ_PORT:-5555}:5555" # Change if your binary listens on another port
+    environment:
+      - ZMQ_HOST=${ZMQ_PORT}
 
   questdb:
     image: questdb/questdb:8.2.3

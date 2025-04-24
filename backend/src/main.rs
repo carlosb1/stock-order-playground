@@ -41,6 +41,7 @@ async fn main() {
     let questdb_config = env::var("QUESTDB_CONFIG").unwrap_or(
         "http::addr=localhost:9000;username=admin;password=quest;retry_timeout=20000;".to_string(),
     );
+    let endpoint_ml = env::var("ENDPOINT_ZMQ").unwrap_or("tcp://0.0.0.0:5555".to_string());
 
     tracing::info!("🌐 WebSocket server running on ws://{}:{}", host, port);
 
@@ -66,7 +67,7 @@ async fn main() {
     /* running mocked */
     run_binance(&multi_tx);
     fetch_save_db(&questdb_config, multi_tx.subscribe());
-    run_ml(multi_tx.subscribe(), multi_tx.clone());
+    run_ml(multi_tx.clone(), multi_tx.subscribe(), endpoint_ml);
     /* running mocked */
     //run_mock(&multi_tx);
 
@@ -149,7 +150,7 @@ fn fetch_save_db(questdb_config: &String, mut rx: Receiver<String>) {
     });
 }
 
-fn run_ml(mut rx: Receiver<String>, mut tx: broadcast::Sender<String>) {
+fn run_ml(mut tx: broadcast::Sender<String>, mut rx: Receiver<String>, endpoint_ml: String) {
     tokio::spawn(async move {
         let mut batch: Vec<String> = Vec::with_capacity(100); // Size queue
         let mut interval = time::interval(Duration::from_millis(500));
@@ -158,7 +159,7 @@ fn run_ml(mut rx: Receiver<String>, mut tx: broadcast::Sender<String>) {
                 Ok(data) = rx.recv() => {
                     batch.push(data);
                     if batch.len() >= 100 {
-                        if let Err(e) = run_ml_inter(&batch, tx.clone()).await {
+                        if let Err(e) = run_ml_inter(&batch, tx.clone(),endpoint_ml.clone()).await {
                             tracing::error!("ml error: {e}");
                         }
                         batch.clear();
@@ -166,7 +167,7 @@ fn run_ml(mut rx: Receiver<String>, mut tx: broadcast::Sender<String>) {
                 }
                 _ = interval.tick() => {
                     if !batch.is_empty() {
-                        if let Err(e) = run_ml_inter(&batch, tx.clone()).await {
+                        if let Err(e) = run_ml_inter(&batch, tx.clone(), endpoint_ml.clone()).await {
                             tracing::error!("ml error {e}");
                         }
                         batch.clear();

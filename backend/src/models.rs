@@ -6,7 +6,7 @@ use cbadv::models::websocket::Level2Update;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum CoinbaseMessage {
+pub enum AppMessage {
     Snapshot(Vec<Candle>),
     Update(Candle),
     Level2(Vec<Level2>),
@@ -14,6 +14,10 @@ pub enum CoinbaseMessage {
     Ping(),
     Pong(),
     Other(String),
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum MLMessage {
+    MidPrice(f64),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

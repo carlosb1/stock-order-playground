@@ -4,7 +4,7 @@ use tokio::sync::broadcast;
 use tokio_tungstenite::connect_async;
 use url::Url;
 
-use crate::models::{BinanceDepthUpdate, CoinbaseMessage};
+use crate::models::{AppMessage, BinanceDepthUpdate};
 use crate::Worker;
 
 pub const BTC_USDT: &str = "btcusdt@depth";
@@ -67,8 +67,7 @@ impl Worker for BinanceWorker {
                         {
                             let cloned_update = update.clone();
                             tx.send(
-                                to_string(&CoinbaseMessage::BinanceDepthUpdate(cloned_update))
-                                    .unwrap(),
+                                to_string(&AppMessage::BinanceDepthUpdate(cloned_update)).unwrap(),
                             )
                             .unwrap(); // Send the candle to the channel
                         } else {

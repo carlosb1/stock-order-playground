@@ -1,18 +1,21 @@
-use super::{Worker, db, models};
-use crate::models::{Candle, CoinbaseMessage, Level2, Side};
-use cbadv::models::websocket::{
-    CandleUpdate, Channel, EndpointStream, EventType, Events, Level2Event, Message,
-};
-use cbadv::types::CbResult;
-use cbadv::{WebSocketClient, WebSocketClientBuilder};
-use chrono::format::Numeric::Timestamp;
-use chrono::{DateTime, Utc};
-use lazy_static::lazy_static;
-use serde_json::to_string;
 use std::process::exit;
 use std::time::{Duration, Instant};
+
+use cbadv::{WebSocketClient, WebSocketClientBuilder};
+use cbadv::models::websocket::{
+    CandleUpdate, Channel, EndpointStream, Events, EventType, Level2Event, Message,
+};
+use cbadv::types::CbResult;
+use chrono::{DateTime, Utc};
+use chrono::format::Numeric::Timestamp;
+use lazy_static::lazy_static;
+use serde_json::to_string;
 use tokio::sync::broadcast;
 use tokio::sync::mpsc::Sender;
+
+use crate::models::{AppMessage, Candle, Level2, Side};
+
+use super::{db, models, Worker};
 
 pub struct CoinbaseWorker {
     client: WebSocketClient,
@@ -92,14 +95,14 @@ async fn message_action(
                 if typ == EventType::Snapshot {
                     tokio::spawn(async move {
                         tx_cloned
-                            .send(to_string(&CoinbaseMessage::Snapshot(candled_cloneds)).unwrap())
+                            .send(to_string(&AppMessage::Snapshot(candled_cloneds)).unwrap())
                             .unwrap(); // Send the candle to the channel
                     });
                 } else if typ == EventType::Update {
                     let candle_cloned = candle_updates.first().unwrap().clone();
                     tokio::spawn(async move {
                         tx_cloned
-                            .send(to_string(&CoinbaseMessage::Update(candle_cloned)).unwrap())
+                            .send(to_string(&AppMessage::Update(candle_cloned)).unwrap())
                             .unwrap(); // Send the candle to the channel
                     });
                 } else {
@@ -143,7 +146,7 @@ async fn message_action(
             let events_cloned = events_to_send.clone();
             let tx_cloned = tx.clone(); // Clone the sender for the async task
             tokio::spawn(async move {
-                let msg_to_send = to_string(&CoinbaseMessage::Level2(events_cloned)).unwrap();
+                let msg_to_send = to_string(&AppMessage::Level2(events_cloned)).unwrap();
                 tx_cloned.send(msg_to_send.clone()).unwrap(); // Send the candle to the channel
             });
 
@@ -159,7 +162,7 @@ async fn message_action(
                 tokio::spawn(async move {
                     tracing::debug!("msg_to_send={:?}", str_message.clone());
                     tx_cloned
-                        .send(to_string(&CoinbaseMessage::Other(str_message.clone())).unwrap())
+                        .send(to_string(&AppMessage::Other(str_message.clone())).unwrap())
                         .unwrap(); // Send the candle to the channel
                 });
             }
