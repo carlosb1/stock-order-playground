@@ -1,16 +1,16 @@
 use std::env;
 use std::sync::Arc;
 
-use cbadv::models::websocket::{CandlesEvent, CandleUpdate};
+use cbadv::models::websocket::{CandleUpdate, CandlesEvent};
 use dotenv::dotenv;
 use futures_util::{SinkExt, StreamExt};
 use tokio::fs::create_dir_all;
 use tokio::net::TcpListener;
-use tokio::sync::{broadcast, mpsc};
 use tokio::sync::broadcast::Receiver;
 use tokio::sync::mpsc::Sender;
-use tokio::time::{self, Duration};
+use tokio::sync::{broadcast, mpsc};
 use tokio::time::sleep;
+use tokio::time::{self, Duration};
 use tokio_tungstenite::accept_async;
 use tungstenite::Message;
 
@@ -36,7 +36,8 @@ pub mod models;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let host = env::var("WS_SERVER_HOST").unwrap_or("0.0.0.0".to_string());
+    //let host = env::var("WS_SERVER_HOST").unwrap_or("0.0.0.0".to_string());
+    let host = "0.0.0.0".to_string();
     let port = env::var("WS_SERVER_PORT").unwrap_or("9001".to_string());
     let questdb_config = env::var("QUESTDB_CONFIG").unwrap_or(
         "http::addr=localhost:9000;username=admin;password=quest;retry_timeout=20000;".to_string(),

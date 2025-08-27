@@ -29,15 +29,15 @@ services:
       - PRODUCT_IDS=${PRODUCT_IDS}
       - RUST_LOG=${RUST_LOG:-info}
 
-  ml:
-    build:
-      context: ./bc-ml-trading/bc-ml-trading
-      dockerfile: Dockerfile
-    container_name: ml
-    ports:
-      - "${ZMQ_PORT:-5555}:5555" # Change if your binary listens on another port
-    environment:
-      - ZMQ_HOST=${ZMQ_PORT}
+  #ml:
+  #  build:
+  #    context: ./bc-ml-trading/bc-ml-trading
+  #    dockerfile: Dockerfile
+  #  container_name: ml
+  #  ports:
+  #    - "${ZMQ_PORT:-5555}:5555" # Change if your binary listens on another port
+  #  environment:
+  #    - ZMQ_HOST=${ZMQ_PORT}
 
   questdb:
     image: questdb/questdb:8.2.3

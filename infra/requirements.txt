@@ -1,0 +1,14 @@
+Arpeggio==2.0.2
+attrs==25.3.0
+debugpy==1.8.14
+dill==0.4.0
+dotenv==0.9.9
+grpcio==1.66.2
+parver==0.5
+protobuf==4.25.8
+pulumi==3.177.0
+pulumi_aws==6.82.2
+pulumi_docker==4.7.0
+python-dotenv==1.1.1
+PyYAML==6.0.2
+semver==3.0.4

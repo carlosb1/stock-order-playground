@@ -1,4 +1,6 @@
-.idea
-frontend/.idea
-ws-backend/.idea
+*.pyc
+venv/
+*/.idea
 .env
+infra/.env
+.idea
