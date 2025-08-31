@@ -11,7 +11,9 @@ use barter::statistic::time::Daily;
 use barter::system::builder::{AuditMode, EngineFeedMode, SystemArgs, SystemBuilder};
 use barter::system::config::SystemConfig;
 use barter::system::System;
+use barter_data::event::MarketEvent;
 use barter_data::streams::builder::dynamic::indexed::init_indexed_multi_exchange_market_stream;
+use barter_data::streams::consumer::MarketStreamEvent;
 use barter_data::subscription::SubKind;
 use barter_instrument::index::IndexedInstruments;
 use barter_integration::Terminal;
@@ -51,7 +53,8 @@ impl Worker {
     pub fn new<D>(system_config: &SystemConfig, db_config: String, decider: D, is_raw: bool) -> Self
     where
         D: ModelDecider + 'static {
-        let subkinds = [SubKind::PublicTrades, SubKind::OrderBooksL1, SubKind::OrderBooksL2];
+        //let subkinds = [SubKind::PublicTrades, SubKind::OrderBooksL1, SubKind::OrderBooksL2];
+        let subkinds = [SubKind::PublicTrades, SubKind::OrderBooksL2];
         Self{system_config: system_config.clone(),
             db_config: db_config.clone(),
             subkinds: subkinds.to_vec(),
@@ -154,7 +157,7 @@ impl Worker {
         let (tx, rx): (Sender<BackgroundMessage>, Receiver<BackgroundMessage>) = mpsc::channel(1024);
 
         Worker::db_worker(rx, self.db_config.as_str(),sender_to_ws, self.is_raw)?;
-
+        
         let audit = system.audit.take().unwrap();
         let audit_task = tokio::spawn(async move {
             let mut audit_stream = audit.updates.into_stream();

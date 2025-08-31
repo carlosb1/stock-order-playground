@@ -1,31 +1,69 @@
 use std::collections::BTreeMap;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Msg { pub Market: Market }
-#[derive(Deserialize)]
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Market { pub Item: Item }
-#[derive(Deserialize)]
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Item { pub kind: Kind }
 
-#[derive(Deserialize)]
-#[serde(untagged)]
+/// "kind": { "OrderBookL1": {...} } | { "OrderBook": { "Update": {...} | "Snapshot": {...} } } | { "Trade": {...} }
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "PascalCase")]
 pub enum Kind {
-    OrderBookL1 { OrderBookL1: L1 },           // opcional, por si quieres mid/L1
-    OrderBook    { OrderBook: UpdateWrap },
-    Trade        { Trade: serde_json::Value }, // ignora para el depth
+    OrderBookL1(L1),
+    OrderBook(OrderBookVariant),
+    Trade(Trade),
 }
-#[derive(Deserialize)]
-pub struct L1 { best_bid: Level, best_ask: Level }
-#[derive(Deserialize)]
-pub struct Level { price: String, amount: String }
-#[derive(Deserialize)]
-#[serde(tag = "Update", rename_all = "PascalCase")]
-pub enum UpdateWrap { Update(OrderBookUpdate) }
-#[derive(Deserialize)]
-pub struct OrderBookUpdate { bids: SideLevels, asks: SideLevels }
-#[derive(Deserialize)]
-pub struct SideLevels { levels: Vec<Level> }
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct L1 {
+    #[serde(default)] pub best_bid: Level,
+    #[serde(default)] pub best_ask: Level,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+pub struct Level {
+    #[serde(default)] pub price: String,
+    #[serde(default)] pub amount: String,
+}
+
+/// "OrderBook": { "Update": {...} } o "OrderBook": { "Snapshot": {...} }
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "PascalCase")]
+pub enum OrderBookVariant {
+    Update(OrderBookUpdate),
+    Snapshot(OrderBookSnapshot),
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct OrderBookUpdate {
+    #[serde(default)] pub bids: SideLevels,
+    #[serde(default)] pub asks: SideLevels,
+    // otros campos (sequence, time_engine, etc.) se ignoran
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct OrderBookSnapshot {
+    #[serde(default)] pub bids: SideLevels,
+    #[serde(default)] pub asks: SideLevels,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+pub struct SideLevels {
+    #[serde(default)] pub levels: Vec<Level>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Trade {
+    #[serde(default)] pub id: String,
+    #[serde(default)] pub price: f64,
+    #[serde(default)] pub amount: f64,
+    #[serde(default)] pub side: String,
+}
 
 #[derive(Default, Clone)]
 pub struct Book {

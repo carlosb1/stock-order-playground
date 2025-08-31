@@ -4,9 +4,9 @@ mod models;
 use dioxus::prelude::*;
 use js_sys::{Array, Float64Array};
 use wasm_bindgen::prelude::*;
-use web_sys::{MessageEvent, WebSocket};
-use crate::js::{ensure_container, init_uplot_if_needed, inject_uplot};
-use crate::models::{Book, Kind, Msg, UpdateWrap};
+use web_sys::{console, MessageEvent, WebSocket};
+use crate::js::{ensure_container, init_uplot_now, inject_uplot};
+use crate::models::{Book, Kind, Msg, OrderBookVariant};
 
 #[wasm_bindgen(start)]
 pub fn start() {
@@ -29,7 +29,7 @@ fn app() -> Element {
         // intenta inicializar el chart (si el script aún no cargó, reintenta más tarde)
         {
             let closure = Closure::<dyn FnMut()>::new(move || {
-                init_uplot_if_needed("depth");
+                init_uplot_now("depth");
             });
             // ejecuta ahora
             closure.as_ref().unchecked_ref::<js_sys::Function>().call0(&JsValue::NULL).ok();
@@ -55,24 +55,30 @@ fn app() -> Element {
             let onmessage = Closure::<dyn FnMut(MessageEvent)>::new(move |evt: MessageEvent| {
                 if let Ok(txt) = evt.data().dyn_into::<js_sys::JsString>() {
                     if let Some(json) = extract_json(&txt.as_string().unwrap_or_default()) {
-                        if let Ok(m) = serde_json::from_str::<Msg>(&json) {
-                            if let Kind::OrderBook { OrderBook: UpdateWrap::Update(up) } = m.Market.Item.kind {
-                                book.write().apply(&up);
+                        let msg = serde_json::from_str::<Msg>(&json);
+                        match msg {
+                            Err(e) => {
+                                let str_e = format!("{:?}", e);
+                                console::log_1(&JsValue::from_str(str_e.as_str()));
+                            }
+                            Ok(m) => {
+                                if let Kind::OrderBook( OrderBookVariant::Update(up), .. ) = m.Market.Item.kind {
+                                    book.write().apply(&up);
+                                    // preparar data y llamar a window.updateDepth(xs,bids,asks)
+                                    let (xs, yb, ya) = book.read().to_depth_union(80);
 
-                                // preparar data y llamar a window.updateDepth(xs,bids,asks)
-                                let (xs, yb, ya) = book.read().to_depth_union(80);
-
-                                let win = web_sys::window().unwrap();
-                                if let Ok(f) = js_sys::Reflect::get(&win, &"updateDepth".into()) {
-                                    if let Some(func) = f.dyn_ref::<js_sys::Function>() {
-                                        let xs = Float64Array::from(xs.as_slice());
-                                        let yb = Float64Array::from(yb.as_slice());
-                                        let ya = Float64Array::from(ya.as_slice());
-                                        let args = Array::new();
-                                        args.push(&xs);
-                                        args.push(&yb);
-                                        args.push(&ya);
-                                        let _ = func.apply(&JsValue::NULL, &args);
+                                    let win = web_sys::window().unwrap();
+                                    if let Ok(f) = js_sys::Reflect::get(&win, &"updateDepth".into()) {
+                                        if let Some(func) = f.dyn_ref::<js_sys::Function>() {
+                                            let xs = Float64Array::from(xs.as_slice());
+                                            let yb = Float64Array::from(yb.as_slice());
+                                            let ya = Float64Array::from(ya.as_slice());
+                                            let args = Array::new();
+                                            args.push(&xs);
+                                            args.push(&yb);
+                                            args.push(&ya);
+                                            let _ = func.apply(&JsValue::NULL, &args);
+                                        }
                                     }
                                 }
                             }
