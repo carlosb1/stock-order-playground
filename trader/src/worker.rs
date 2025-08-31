@@ -159,7 +159,7 @@ impl Worker {
         let audit_task = tokio::spawn(async move {
             let mut audit_stream = audit.updates.into_stream();
             while let Some(audit) = audit_stream.next().await {
-                debug!(?audit, "AuditStream consumed AuditTick");
+                debug!(?audit.context, "AuditStream consumed AuditTick");
                 if audit.event.is_terminal() {
                     break;
                 }

@@ -80,7 +80,7 @@ async fn delete_workers(
             // remove gives you ownership; no guards alive
             Some((_key, mut worker)) => {
                 // optional: handle result if stop() returns Result<_, _>
-                let report = worker.stop(None).await;
+                let report = stop_worker(worker).await;
                 result.push((name, "REMOVED".to_string()));
             }
             None => {
@@ -196,14 +196,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (tx, _rx) = broadcast::channel(1024);
     
     let workers = Arc::new(DashMap::new());
-    let app_state = Arc::new(AppState { tx, workers });
+    let app_state = Arc::new(AppState { tx: tx.clone(), workers });
 
 
-    let static_dir = get_service(ServeDir::new("../webapp/dist"))
+
+    let static_dir = get_service(ServeDir::new("../webapp/dist/public"))
         .handle_error(|err| async move {
             (StatusCode::INTERNAL_SERVER_ERROR, format!("serve error: {err}"))
         });
-
+    let mut worker = new_worker_by_id("MOCK_DECIDED", system_config, &*db_config).unwrap();
+    start_worker(&mut worker, tx.clone()).await.unwrap();
+    app_state.workers.insert("MOCK_DECIDED".to_string(), worker);
 
     let app = Router::new()
         .route("/workers/list", get(list_workers))
@@ -213,7 +216,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .fallback_service(static_dir)
         .with_state(app_state);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
         .unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
