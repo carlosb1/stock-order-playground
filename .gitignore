@@ -4,3 +4,5 @@ venv/
 .env
 infra/.env
 .idea
+*/target
+*/dist

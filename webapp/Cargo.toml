@@ -1,0 +1,22 @@
+[package]
+name = "webapp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dioxus = { version = "0.6", features = ["web"] }
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = ["Window","WebSocket","MessageEvent","EventTarget"] }
+js-sys = "0.3"
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"

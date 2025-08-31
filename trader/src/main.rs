@@ -30,7 +30,7 @@ use axum::extract::ws::{Message, Utf8Bytes, WebSocket};
 use axum::response::{Html, IntoResponse};
 use axum::{Json, Router};
 use axum::http::StatusCode;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 use axum::routing::{get, get_service, post};
 use barter::engine::audit::{AuditTick, EngineAudit};
 use barter::strategy::close_positions::{close_open_positions_with_market_orders, ClosePositionsStrategy};
@@ -204,12 +204,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             (StatusCode::INTERNAL_SERVER_ERROR, format!("serve error: {err}"))
         });
 
+
     let app = Router::new()
         .route("/workers/list", get(list_workers))
         .route("/workers", post(post_workers))
         .route("/workers/delete",post(delete_workers))
         .route("/websocket", get(websocket_handler))
-        .nest_service("/", static_dir)
+        .fallback_service(static_dir)
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
