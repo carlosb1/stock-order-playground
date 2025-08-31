@@ -5,7 +5,7 @@
  ## Overview
 
  This template provisions an S3 bucket (`pulumi_aws.s3.BucketV2`) in your AWS account and exports its ID as an output. It’s an ideal starting point when:
-  - You want to learn Pulumi with AWS in Python.
+  - You want to learn Pulumi with AWS in Pyth
   - You need a barebones S3 bucket deployment to build upon.
   - You prefer a minimal template without extra dependencies.
 

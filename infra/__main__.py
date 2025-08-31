@@ -225,7 +225,10 @@ image_name = "questdb/questdb:8.2.3"
 cpu = '1024'
 memory = 2048
 port = 9000
-port_mappings=[{"containerPort": port, "protocol": "tcp"}]
+
+port_2 = 9009
+port_mappings=[{"containerPort": port, "protocol": "tcp"},{"containerPort": port_2, "protocol": "tcp"} ]
+
 (alb_questdb, _, load_balancers) = make_alb_questdb(name, app_vpc, subnets, security_groups, port, "HTTP")
 (service, definition) = make_service_questdb(app_cluster, app_exec_role, app_task_role,
                 name,

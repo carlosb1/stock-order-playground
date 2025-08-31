@@ -1,0 +1,48 @@
+[package]
+name = "example-barter"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rust_decimal = "1.37.2"
+tracing = "0.1.41"
+tokio = "1.47.1"
+futures = "0.3.31"
+rust_decimal_macros = "1.37.1"
+barter = "0.12.3"
+serde_json = "1.0.143"
+barter-execution = "0.6.0"
+barter-instrument = "0.3.1"
+barter-data = "0.10.2"
+barter-integration = "0.9.2"
+smol_str = "0.3.2"
+serde = { version = "1.0.219", features = ["derive"] }
+chrono = "0.4.41"
+anyhow = "1.0.99"
+tokio-stream = "0.1.17"
+
+# wal dependencies
+
+byteorder = "1.5"
+crc32c = "0.6.8"
+log = "0.4"
+memmap2 = "0.9.4"
+rand = "0.9"
+rand_distr = "0.5"
+fs4 = "0.13.1"
+# fs4 depends on rustix, but pulling this dependency explicitly into the tree
+# to use direct functions on FreeBSD
+rustix = { version = "1", features = [ "fs" ]}
+crossbeam-channel = "0.5.15"
+
+# Binary dependencies
+env_logger = "0.11"
+questdb-rs = { version = "4.0.4", features = ["chrono_timestamp"] }
+tracing-subscriber = "0.3.19"
+axum = {version="0.8.4", features = ["ws"]  }
+dyn-clone = "1.0.20"
+
+[dev-dependencies]
+tempfile = "3.21.0"
+crc = "3.3.0"
+quickcheck = "1.0.3"
