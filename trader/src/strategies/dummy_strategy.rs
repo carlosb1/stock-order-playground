@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use barter::strategy::algo::AlgoStrategy;
 use barter::engine::state::EngineState;
 use barter::engine::state::global::DefaultGlobalData;
@@ -23,7 +24,7 @@ use barter_instrument::asset::AssetIndex;
 use barter_integration::channel::UnboundedTx;
 use dyn_clone::DynClone;
 use rust_decimal::Decimal;
-use crate::intrumentdata::InstrumentMarketDataL2;
+use crate::intrument_data::InstrumentMarketDataL2;
 use rust_decimal_macros::dec;
 use crate::strategies::dummy_strategy::Operation::Buy;
 
@@ -32,32 +33,46 @@ pub type MyRisk   = DefaultRiskManager<MyState>;
 pub type MyExecTx  = MultiExchangeTxMap<UnboundedTx<ExecutionRequest>>;
 pub type MyEvent  = EngineEvent<DataKind>;
 //pub type MyEngine = Engine<LiveClock, MyState, MyExecTx, MyStrategy, MyRisk>;
-pub type MyEngine<S> = Engine<LiveClock, MyState, MyExecTx, MyStrategy<S>, MyRisk>;
+pub type MyEngine = Engine<LiveClock, MyState, MyExecTx, MyStrategy, MyRisk>;
 
 pub enum Operation {
     Buy(Decimal, Decimal),
-    Other
+    Mocked,
+    Other,
 }
-pub trait ModelDecider:  Clone + Send + Sync {
-    fn run(
-        &self,
-        bids: &[(Decimal, Decimal)],
-        asks: &[(Decimal, Decimal)],
-    ) -> Operation {
+
+pub trait ModelDecider: Send + Sync {
+    fn run(&self, bids: &[(Decimal, Decimal)], asks: &[(Decimal, Decimal)]) -> Operation;
+}
+
+#[derive(Clone)]
+pub struct DummyDecider;
+impl ModelDecider for DummyDecider {
+    fn run(&self, _bids: &[(Decimal, Decimal)], _asks: &[(Decimal, Decimal)]) -> Operation {
         Operation::Buy(dec!(0.0), dec!(0.0))
     }
 }
-//dyn_clone::clone_trait_object!(ModelDecider);
+
 #[derive(Clone)]
 pub struct MockDecider;
 impl ModelDecider for MockDecider {
-
+    fn run(&self, _bids: &[(Decimal, Decimal)], _asks: &[(Decimal, Decimal)]) -> Operation {
+        Operation::Mocked
+    }
 }
 
+
 #[derive(Clone)]
-pub struct MyStrategy<S: ModelDecider> {
+pub struct MyStrategy {
     pub id: StrategyId,
-    pub wrapper: S,
+    pub wrapper: Arc<dyn ModelDecider + Send + Sync>,
+}
+
+impl MyStrategy {
+    pub fn new<D>(decide: D) -> Self where
+        D: ModelDecider + 'static, {
+        Self { id: strategy_id(), wrapper: Arc::new(decide) }
+    }
 }
 
 pub fn strategy_id() -> StrategyId {
@@ -77,9 +92,7 @@ fn gen_order_id(instrument: usize) -> OrderId {
     OrderId::new(InstrumentIndex(instrument).to_string())
 }
 
-impl<S> AlgoStrategy for MyStrategy<S>
-where
-    S: ModelDecider {
+impl AlgoStrategy for MyStrategy {
     type State = MyState;
 
     fn generate_algo_orders(&self, state: &Self::State) -> (impl IntoIterator<Item=OrderRequestCancel<ExchangeIndex, InstrumentIndex>>, impl IntoIterator<Item=OrderRequestOpen<ExchangeIndex, InstrumentIndex>>) {
@@ -89,6 +102,7 @@ where
             .instruments(&InstrumentFilter::None)
             .filter_map(|state| {
                 if let Some((asks, bids)) = state.data.l2() {
+                    self.wrapper.run(asks, bids);
                     //println!("/////////////////////////////////");
                     //println!("-->{:?}", asks);
                     //println!("-->{:?}", bids);
@@ -135,9 +149,7 @@ where
 }
 
 // Cerrar posiciones: usa helper listo (market + IOC por cada posición abierta)
-impl<S> ClosePositionsStrategy for MyStrategy<S>
-where
-    S: ModelDecider, {
+impl ClosePositionsStrategy for MyStrategy {
     type State = MyState;
 
     fn close_positions_requests<'a>(
@@ -163,19 +175,16 @@ where
 pub struct OnDisconnectOutput;
 
 // Al desconectar del exchange: cancela y cierra de forma segura (puedes dejar no-op si prefieres)
-impl<S> OnDisconnectStrategy<
+impl OnDisconnectStrategy<
     LiveClock,
     EngineState<DefaultGlobalData, InstrumentMarketDataL2>,
     MyExecTx,
     MyRisk,
-> for MyStrategy<S>
-where
-    S: ModelDecider,
-{
+> for MyStrategy{
     type OnDisconnect = OnDisconnectOutput;
 
     fn on_disconnect(
-        engine: &mut MyEngine<S>,
+        engine: &mut MyEngine,
         _exchange: ExchangeId,
     ) -> Self::OnDisconnect {
         OnDisconnectOutput
@@ -186,19 +195,16 @@ where
 pub struct OnTradingDisabledOutput;
 
 // Al deshabilitar trading: idem
-impl<S> OnTradingDisabled<
+impl OnTradingDisabled<
     LiveClock,
     MyState,
     MyExecTx,
     MyRisk,
-> for MyStrategy<S>
-where
-    S: ModelDecider,
-{
+> for MyStrategy {
     type OnTradingDisabled = OnTradingDisabledOutput;
 
     fn on_trading_disabled(
-        engine: &mut MyEngine<S>,
+        engine: &mut MyEngine,
     ) -> Self::OnTradingDisabled {
         OnTradingDisabledOutput
     }
