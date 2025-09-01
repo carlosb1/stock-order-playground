@@ -93,6 +93,11 @@ async fn list_running_workers(State(arc_state): State<Arc<AppState>>) -> Result<
         arc_state.workers.iter().map(|entry| entry.key().clone()).collect();
     Ok(Json(included_name_workers))
 }
+async fn all_available_workers(State(arc_state): State<Arc<AppState>>) -> Result<Json<HashSet<String>>, StatusCode> {
+    let workers:  HashSet<String> = all_workers().iter().map(|e| e.to_string()).collect();
+    Ok(Json(workers))
+}
+
 
 async fn report_workers(State(arc_state): State<Arc<AppState>>) -> Result<Json<Vec<Vec<Fill>>>, StatusCode> {
     let mut fills: Vec<Vec<Fill>> = Vec::new();
@@ -112,7 +117,7 @@ async fn post_workers(
     let mut resp = Vec::with_capacity(name_workers.len());
 
     for (name, _cfg) in name_workers {
-        if !list_available_workers().contains(&name.as_str()) {
+        if !all_workers().contains(&name.as_str()) {
             resp.push((name, "NOTEXIST".into()));
             continue;
         }
@@ -138,7 +143,7 @@ async fn post_workers(
 }
 
 
-pub fn list_available_workers() -> Vec<&'static str> {
+pub fn all_workers  () -> Vec<&'static str> {
     vec!["MOCK_DECIDED","DUMMY_DECIDED"]
 }
 
@@ -214,7 +219,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     app_state.workers.insert("MOCK_DECIDED".to_string(), worker);
 
     let app = Router::new()
-        .route("/workers/list", get(list_running_workers))
+        .route("/workers/list", get(all_available_workers))
         .route("/workers", post(post_workers))
         .route("/workers/delete",post(delete_workers))
         .route("/workers/reports",get(report_workers))

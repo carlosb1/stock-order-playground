@@ -55,16 +55,18 @@ fn app() -> Element {
     let mut signed_strategies = use_signal(|| Vec::new());
     let mut selected = use_signal(|| String::from(""));
 
-    let strategies = spawn(async move {
-        let new_strategies = list_strategies().await;
-        signed_strategies.set(new_strategies.clone());
-        if new_strategies.len() > 1 {
-            let first = new_strategies.get(0).unwrap();
-            selected.set(first.clone());
+    use_effect(move || {
+        spawn(async move {
+            let new_strategies = list_strategies().await;
+            signed_strategies.set(new_strategies.clone());
+            if new_strategies.len() > 1 {
+                let first = new_strategies.get(0).unwrap();
+                selected.set(first.clone());
 
-        }
+            }
+        });
     });
-
+    
     use_effect(move || {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
