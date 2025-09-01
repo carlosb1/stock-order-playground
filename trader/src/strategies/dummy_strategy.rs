@@ -138,11 +138,12 @@ impl AlgoStrategy for MyStrategy {
                         kind: OrderKind::Market,
                         time_in_force: TimeInForce::ImmediateOrCancel, // inmend
                         price,
-                        quantity: dec!(1),
+                        quantity: dec!(3),
                     },
                 })
             });
 
+        // cancel order, execute orders
         //(std::iter::empty(), std::iter::empty())
         (std::iter::empty(), opens)
     }

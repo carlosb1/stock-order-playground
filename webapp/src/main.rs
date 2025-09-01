@@ -1,44 +1,85 @@
 mod js;
 mod models;
 
+use std::rc::Rc;
 use dioxus::prelude::*;
 use js_sys::{Array, Float64Array};
 use wasm_bindgen::prelude::*;
 use web_sys::{console, MessageEvent, WebSocket};
 use crate::js::{ensure_container, init_uplot_now, inject_uplot};
 use crate::models::{Book, Kind, Msg, OrderBookVariant};
+use gloo_net::http::Request;
 
 #[wasm_bindgen(start)]
 pub fn start() {
     dioxus::launch(app);
 }
 
-// load websocket
+async fn post_new_strategy(strategy: String) -> bool {
+    let payload = vec![(strategy, "".to_string())];
+    let resp = Request::post("/workers")
+        .header("Content-Type", "application/json")
+        .json(&payload)
+        .unwrap()
+        .send()
+        .await;
+    resp.is_ok()
+}
+
+async fn list_strategies() -> Vec<String> {
+    match Request::get("/workers/list").send().await {
+        Ok(resp) => resp.json().await.unwrap_or_default(),
+        Err(err) => {
+            web_sys::console::error_1(&format!("list_strategies error: {err:?}").into());
+            Vec::new()
+        }
+    }
+}
+
+async fn delete_strategy(strategy: String) -> bool {
+    let payload = vec![strategy];
+    let resp = Request::post("/workers/delete")
+        .header("Content-Type", "application/json")
+        .json(&payload)
+        .unwrap()
+        .send()
+        .await;
+    resp.is_ok()
+}
+
 
 #[component]
 fn app() -> Element {
     let book = use_signal(Book::default);
     let status = use_signal(|| "connecting...".to_string());
+    let mut signed_strategies = use_signal(|| Vec::new());
+    let mut selected = use_signal(|| String::from(""));
+
+    let strategies = spawn(async move {
+        let new_strategies = list_strategies().await;
+        signed_strategies.set(new_strategies.clone());
+        if new_strategies.len() > 1 {
+            let first = new_strategies.get(0).unwrap();
+            selected.set(first.clone());
+
+        }
+    });
 
     use_effect(move || {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
         inject_uplot(&document);
         let _container = ensure_container(&document);
-
-        // intenta inicializar el chart (si el script aún no cargó, reintenta más tarde)
         {
             let closure = Closure::<dyn FnMut()>::new(move || {
                 init_uplot_now("depth");
             });
-            // ejecuta ahora
             closure.as_ref().unchecked_ref::<js_sys::Function>().call0(&JsValue::NULL).ok();
-            // y cada 500ms por si el script aún no estaba
             let _ = window.set_interval_with_callback_and_timeout_and_arguments_0(
                 closure.as_ref().unchecked_ref(),
                 500,
             );
-            closure.forget(); // mantener vivo
+            closure.forget();
         }
 
         // WebSocket
@@ -62,7 +103,7 @@ fn app() -> Element {
                                 console::log_1(&JsValue::from_str(str_e.as_str()));
                             }
                             Ok(m) => {
-                                if let Kind::OrderBook( OrderBookVariant::Update(up), .. ) = m.Market.Item.kind {
+                                if let Kind::OrderBook(OrderBookVariant::Update(up), ..) = m.Market.Item.kind {
                                     book.write().apply(&up);
                                     // preparar data y llamar a window.updateDepth(xs,bids,asks)
                                     let (xs, yb, ya) = book.read().to_depth_union(80);
@@ -95,15 +136,58 @@ fn app() -> Element {
         }
     });
 
+
     rsx! {
-        div { class: "p-3",
-            h3 { "Order Book depth" }
-            p { "{status.read().as_str()}" }
-            // el canvas se añade al body, si prefieres dentro, usa un nodo ref y cámbiale el append
+    document::Stylesheet { href: asset!("/assets/main.css") }
+    div {
+        class: "form-container",
+        div {
+            class: "card",
+            h3 { "Estrategia a incluir" }
+
+            select {
+                value: selected(),
+                onchange: move |evt| {
+                    selected.set(evt.data.value());
+                },
+                for stra in signed_strategies.iter() {
+                    option { value: stra.clone(), "{stra}" }
+                }
+            }
+
+            div {                         // fila con botones (si quieres en línea)
+                style: "display:flex; gap:10px; align-items:center;",
+                button {
+                    class: "btn-action",
+                    onclick: move |_| {
+                        spawn(async move {
+                            let strategy = selected.read().to_string();
+                            post_new_strategy(strategy).await;
+                        });
+                    },
+                    "Activar estrategia"
+                }
+                button {
+                    class: "btn-action",
+                    onclick: move |_| {
+                        spawn(async move {
+                            let strategy = selected.read().to_string();
+                            delete_strategy(strategy).await;
+                        });
+                    },
+                    "Eliminar estrategia"
+                }
+            }
+
+            div {
+                h3 { "Order Book depth" }
+                p { "{status.read().as_str()}" }
+            }
         }
     }
 }
 
+}
 fn ws_url() -> String {
     let w = web_sys::window().unwrap();
     let loc = w.location();

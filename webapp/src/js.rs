@@ -70,10 +70,6 @@ pub fn init_uplot_now(container_id: &str) {
                   draw: [
                     (u) => {{
                       const xs = u.data[0], b = u.data[1], a = u.data[2];
-                      if (xs.length) {{
-                        console.debug("draw n=", xs.length, "x0", xs[0], "xN", xs[xs.length-1], 
-                                      "bN", b[b.length-1], "aN", a[a.length-1]);
-                      }}
                     }}
                   ]
                 }}
@@ -96,10 +92,8 @@ pub fn init_uplot_now(container_id: &str) {
                 const badB = bids.filter(v => !Number.isFinite(v)).length;
                 const badA = asks.filter(v => !Number.isFinite(v)).length;
                 if (badX || badB || badA) {{
-                  console.warn("Non-finite values:", {{badX, badB, badA}});
                 }}
                 if (!(xs.length >= 2 && bids.length === xs.length && asks.length === xs.length)) {{
-                  console.warn("Lens mismatch", xs.length, bids.length, asks.length);
                   return;
                 }}
 

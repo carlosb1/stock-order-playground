@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use barter::engine::audit::{AuditTick, EngineAudit};
 use barter::engine::clock::LiveClock;
 use barter::engine::EngineOutput;
@@ -11,25 +12,35 @@ use barter::statistic::time::Daily;
 use barter::system::builder::{AuditMode, EngineFeedMode, SystemArgs, SystemBuilder};
 use barter::system::config::SystemConfig;
 use barter::system::System;
-use barter_data::event::MarketEvent;
+use barter_data::books::Level;
+use barter_data::event::{DataKind, MarketEvent};
 use barter_data::streams::builder::dynamic::indexed::init_indexed_multi_exchange_market_stream;
 use barter_data::streams::consumer::MarketStreamEvent;
 use barter_data::subscription::SubKind;
+use barter_execution::AccountEventKind;
 use barter_instrument::index::IndexedInstruments;
 use barter_integration::Terminal;
 use futures::StreamExt;
 use questdb::ingress::TimestampNanos;
 use rust_decimal::Decimal;
-use tokio::sync::{broadcast, mpsc};
+use tokio::sync::{broadcast, mpsc, Mutex};
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::task::JoinHandle;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tracing::debug;
-use crate::db::DBRepository;
+use crate::db::{DBRepository};
 use crate::intrument_data::InstrumentMarketDataL2;
-use crate::models::BackgroundMessage;
-use crate::RISK_FREE_RETURN;
+use crate::models::{BackgroundMessage, Fill};
+use crate::{tools, RISK_FREE_RETURN};
+use barter_data::streams::reconnect::Event as ReEvent;
+use barter_data::subscription::book::OrderBookEvent;
+use barter_instrument::Side;
+use chrono::{Date, DateTime, Utc};
+use rust_decimal::prelude::ToPrimitive;
 use crate::strategies::dummy_strategy::{ModelDecider, MyEngine, MyEvent, MyStrategy, OnDisconnectOutput, OnTradingDisabledOutput};
+use crate::tools::{extract_book_l2, extract_order_cancel, extract_order_snapshot};
+
+
 
 pub struct Worker where
 {
@@ -42,6 +53,7 @@ pub struct Worker where
     system: Option<System<MyEngine, MyEvent>>,
     audit_task: Option<AuditTask>,
     db_config: String,
+    pub operations: Arc<Mutex<Vec<Fill>>>,
     is_raw: bool
 }
 
@@ -64,6 +76,7 @@ impl Worker {
             trading_state: TradingState::Disabled,
             system: None,
             audit_task: None,
+            operations: Arc::new(Mutex::new(Vec::new())),
             is_raw
         }
     }
@@ -76,6 +89,7 @@ impl Worker {
             .await?;
         // Instrument data factory: clonamos L2 por instrumento
         let instrument_data = InstrumentMarketDataL2::default();
+
 
         let args = SystemArgs::new(
             &instruments,
@@ -105,6 +119,7 @@ impl Worker {
         self.system = Some(system);
         Ok(())
     }
+
     pub fn enable_trading(&mut self) -> anyhow::Result<()> {
         let Some(system) = &mut self.system else {
             return Err(anyhow::Error::msg("system is not set"));
@@ -113,31 +128,132 @@ impl Worker {
         Ok(())
     }
 
-    fn db_worker( mut rx: Receiver<BackgroundMessage>, db_config: &str, sender_to_ws: Option<broadcast::Sender<String>>,is_raw: bool) -> anyhow::Result<JoinHandle<()>> {
+    fn broadcast_worker(mut rx: Receiver<BackgroundMessage>,
+                        db_config: &str,
+                        sender_to_ws: Option<broadcast::Sender<String>>,
+                        mut operations: Arc<Mutex<Vec<Fill>>>,
+                        is_raw: bool) -> anyhow::Result<JoinHandle<()>> {
+
         let audit_task = tokio::spawn({
             //Add clones id it is necessary
-
             let mut db_inner = DBRepository::new(db_config);
+            let operations = operations.clone();
             async move {
+                let mut best_bid: Level = Level::default();
+                let mut best_ask: Level = Level::default();
+                let mut last_time: DateTime<Utc> = DateTime::default();
+                //we reset the operations
+                if operations.lock().await.len() >= 1000 {
+                    tracing::info!("Cleaning fill operations");
+                    operations.lock().await.clear();
+                }
                 while let Some(val) = rx.recv().await {
                     if is_raw {
-                        if let BackgroundMessage::Market(_) = val {
+                        if let BackgroundMessage::Market(mkt) = val.clone() {
+                            //send to websocket
                             if let Some(sender) = sender_to_ws.clone() {
                                 if let Err(er) = sender.send(serde_json::to_string(&val).unwrap()) {
                                     println!("Error sending background message: {:?}", er);
                                 }
                             }
-                            db_inner.write_bg_msg(&val, TimestampNanos::now()).expect("db worker error");
+                            // is a Item event
+                            let ReEvent::Item(ev) = mkt else {
+                                continue;
+                            };
+
+
+                            /* param for  fill  market events*/
+                            let ex = ev.exchange.as_str();                // o mapea a &str
+                            let instrument = format!("{}", ev.instrument.0); // o tu símbolo real
+                            let ts = ev.time_exchange;
+                            let ns = ts.timestamp_nanos_opt().expect("valid ts");
+                            match &ev.kind {
+                                DataKind::OrderBookL1(l1) => {
+                                    //we save the last bestbid and best_ask
+                                    best_bid = l1.best_bid.unwrap_or_default();
+                                    best_ask = l1.best_ask.unwrap_or_default();
+                                    last_time = l1.last_update_time;
+                                }
+                                DataKind::OrderBook(l2) => {
+                                    let (asks, bids, midprice) = match l2 {
+                                        OrderBookEvent::Snapshot(snapshot) => {
+                                            //we save snapshot
+                                            //tools::create_book_snapshot(snapshot.asks(), snapshot.bids());
+                                            let (asks, bids) = extract_book_l2(snapshot.asks(), snapshot.bids());
+                                            (asks, bids, snapshot.mid_price())
+                                        }
+                                        OrderBookEvent::Update(update) => {
+                                            //tools::apply_update()
+                                            let (asks, bids) = extract_book_l2(update.asks(), update.bids());
+
+                                            (asks, bids, update.mid_price())
+                                        }
+                                    };
+                                    let asks_json = serde_json::to_string(&asks).expect("not valid json");
+                                    let bids_json = serde_json::to_string(&bids).expect("not valid json");
+                                    let prim_mid_price = if let Some(oval) = midprice {
+                                        oval.to_f64().unwrap_or(0.0)
+                                    } else {
+                                        0f64
+                                    };
+                                    db_inner.db_insert_order_book(
+                                        ns, ex,
+                                        instrument.as_str(),
+                                        prim_mid_price,
+                                        asks_json.as_str(), bids_json.as_str(), &ev.kind).expect("Failed to insert order book");
+                                }
+
+                                // Trade “simple”
+                                DataKind::Trade(tr) => {
+                                    let side = if  tr.side == Side::Buy { "bid" } else { "ask" };
+                                    db_inner.db_insert_trade(ns, ex,
+                                                             instrument.as_str(), side, tr.price, tr.amount, &ev.kind).expect("Failed to insert trade");
+                                }
+
+                                // Candle, Ticker, etc.: guarda crudo + lo mínimo
+                                other => {
+                                    db_inner.db_insert_market_other(ns, ex,
+                                                                    instrument.as_str(), other.kind_name(), other).expect("Failed to insert market data");
+                                }
+                            }
+
                         }
                     } else {
-                        if let BackgroundMessage::Account(_) = val {
+                        if let BackgroundMessage::Account(acc) = val.clone() {
+                            //send to ws
                             if let Some(sender) = sender_to_ws.clone() {
                                 if let Err(er) = sender.send(serde_json::to_string(&val).unwrap()) {
                                     println!("Error sending background message: {:?}", er);
                                 }
                             }
-                            db_inner.write_bg_msg(&val, TimestampNanos::now()).expect("db worker error");
-                        }
+                            match acc {
+                                ReEvent::Item(ac) => {
+                                    match ac.kind.clone() {
+                                        AccountEventKind::OrderSnapshot(order) => {
+                                            let (exchange, instrument, quantity, price, evt_kind, time_to_force, side, strategy, ts) = extract_order_snapshot(order);
+                                            let ns = ts.timestamp_nanos_opt().expect("valid ts");
+                                            /* save orders that our strategies are doing */
+                                            operations.lock().await.push(
+                                                Fill{
+                                                    price, quantity, fee: 0., side: side.clone(), strategy: strategy.clone(), ts,
+                                                    best_bid, best_ask, last_time
+                                            });
+                                            db_inner.db_insert_order_account(ns, exchange.as_str(), instrument.as_str(), quantity, price, evt_kind.as_str(), time_to_force.as_str(), side.as_str(), strategy.as_str()).expect("db worker error");
+                                        }
+                                        AccountEventKind::OrderCancelled(cancel) => {
+                                            let (ex, instrument, strategy, ts) = extract_order_cancel(cancel);
+                                            let ns = ts.timestamp_nanos_opt().expect("valid ts");
+                                            db_inner.db_insert_order_cancel(ns, ex.as_str(), instrument.as_str(), strategy.as_str()).expect("db worker error");
+
+                                        }
+                                        _ => {}
+
+                                    }
+                                }
+                                _ => {}
+                            };
+
+                         }
                     }
                 }
 
@@ -156,8 +272,8 @@ impl Worker {
 
         let (tx, rx): (Sender<BackgroundMessage>, Receiver<BackgroundMessage>) = mpsc::channel(1024);
 
-        Worker::db_worker(rx, self.db_config.as_str(),sender_to_ws, self.is_raw)?;
-        
+        Worker::broadcast_worker(rx, self.db_config.as_str(), sender_to_ws, self.operations.clone(), self.is_raw)?;
+
         let audit = system.audit.take().unwrap();
         let audit_task = tokio::spawn(async move {
             let mut audit_stream = audit.updates.into_stream();
@@ -174,7 +290,7 @@ impl Worker {
                                 tx.send(BackgroundMessage::Account(account)).await.unwrap();
                             }
                             EngineEvent::Market(market) => {
-                                tx.send(BackgroundMessage::Market(market)).await.unwrap();
+                                 tx.send(BackgroundMessage::Market(market)).await.unwrap();
                             }
                             _ => {
 

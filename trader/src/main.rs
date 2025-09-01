@@ -3,6 +3,7 @@ mod strategies;
 mod db;
 mod models;
 mod worker;
+mod tools;
 
 use barter::{engine::{
     clock::LiveClock,
@@ -11,7 +12,7 @@ use barter::{engine::{
         instrument::filter::InstrumentFilter,
         trading::TradingState,
     },
-},  risk::DefaultRiskManager, statistic::time::Daily, strategy::DefaultStrategy, system::{
+}, risk::DefaultRiskManager, statistic::time::Daily, strategy::DefaultStrategy, system::{
     builder::{AuditMode, EngineFeedMode, SystemArgs, SystemBuilder},
     config::SystemConfig,
 }, EngineEvent};
@@ -49,6 +50,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use crate::strategies::dummy_strategy::{MockDecider, DummyDecider, ModelDecider, MyEngine, MyEvent, OnDisconnectOutput, OnTradingDisabledOutput};
 use serde_json::json;
 use dashmap::{DashMap, Entry};
+use crate::models::Fill;
 use crate::worker::Worker;
 
 const FILE_PATH_SYSTEM_CONFIG: &str = "system_config.json";
@@ -61,12 +63,6 @@ struct AppState {
     // Channel used to send messages to all connected clients.
     tx: broadcast::Sender<String>,
     workers: Arc<DashMap<String, Worker>>,
-}
-
-// Include utf-8 file at **compile** time.
-async fn list_workers() -> Html<&'static str> {
-    json!({});
-    Html("hello world")
 }
 
 async fn delete_workers(
@@ -97,6 +93,15 @@ async fn list_running_workers(State(arc_state): State<Arc<AppState>>) -> Result<
         arc_state.workers.iter().map(|entry| entry.key().clone()).collect();
     Ok(Json(included_name_workers))
 }
+
+async fn report_workers(State(arc_state): State<Arc<AppState>>) -> Result<Json<Vec<Vec<Fill>>>, StatusCode> {
+    let mut fills: Vec<Vec<Fill>> = Vec::new();
+    for entry in arc_state.workers.iter() {
+        fills.push(entry.operations.lock().await.clone());
+    }
+    Ok(Json(fills))
+}
+
 async fn post_workers(
     State(state): State<Arc<AppState>>,
     Json(name_workers): Json<Vec<(String, String)>>,
@@ -209,9 +214,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     app_state.workers.insert("MOCK_DECIDED".to_string(), worker);
 
     let app = Router::new()
-        .route("/workers/list", get(list_workers))
+        .route("/workers/list", get(list_running_workers))
         .route("/workers", post(post_workers))
         .route("/workers/delete",post(delete_workers))
+        .route("/workers/reports",get(report_workers))
         .route("/websocket", get(websocket_handler))
         .fallback_service(static_dir)
         .with_state(app_state);
