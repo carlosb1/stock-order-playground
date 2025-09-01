@@ -114,13 +114,16 @@ pulumi.info(f'Possible tags = {tags}')
 
 url_backend = "886248216134.dkr.ecr.eu-west-1.amazonaws.com/trading/backend"
 url_frontend = "886248216134.dkr.ecr.eu-west-1.amazonaws.com/trading/frontend"
+url_trader = "886248216134.dkr.ecr.eu-west-1.amazonaws.com/trading/trader"
 
 app_ecr_repo_backend = aws.ecr.get_repository(name='trading/backend')
 app_ecr_repo_frontend = aws.ecr.get_repository(name='trading/frontend')
+app_ecr_repo_trader = aws.ecr.get_repository(name='trading/trader')
 
 urls_with_contexts = [
     (url_backend, "./backend", "backend", "./backend/Dockerfile", app_ecr_repo_backend),
-    (url_frontend,"./frontend", "frontend", "./frontend/Dockerfile", app_ecr_repo_frontend)
+    (url_frontend,"./frontend", "frontend", "./frontend/Dockerfile", app_ecr_repo_frontend),
+    (url_trader, "./trader", "trader", "./trader/Dockerfile", app_ecr_repo_trader)
 ]
 
 # running infra

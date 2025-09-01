@@ -9,6 +9,7 @@ from dotenv import dotenv_values
 #Setting up repos
 repo_backend = aws.ecr.get_repository(name='trading/backend')
 repo_frontend = aws.ecr.get_repository(name='trading/frontend')
+repo_trader = aws.ecr.get_repository(name='trading/trader')
 
 availability_zone = aws.config.region
 tag_deploy='dev'
@@ -23,8 +24,14 @@ frontend_image = aws.ecr.get_image(
     image_tag=tag_deploy  # Ensure this tag exists in ECR
 )
 
+trader_image = aws.ecr.get_image(
+    repository_name=repo_trader.name,
+    image_tag=tag_deploy  # Ensure this tag exists in ECR
+)
+
 backend_image_name = f"{repo_backend.repository_url}@{backend_image.image_digest}"
 frontend_image_name = f"{repo_frontend.repository_url}@{frontend_image.image_digest}"
+trader_image_name =  f"{repo_trader.repository_url}@{trader_image.image_digest}"
 
 app_cluster = aws.ecs.Cluster("app-cluster")
 
@@ -173,6 +180,7 @@ from tools import make_service, make_sd_service, make_alb, make_alb_questdb, mak
 backend_sd = make_sd_service(dns_ns, "backend")
 questdb_sd = make_sd_service(dns_ns, "questdb")
 frontend_sd = make_sd_service(dns_ns, "frontend")
+trader_sd = make_sd_service(dns_ns, "trader")
 
 #setting up environment variables
 backend_hostname = pulumi.Output.concat("backend.", dns_ns.name)
@@ -293,6 +301,33 @@ make_service(app_cluster, app_exec_role, app_task_role,
                 [],
                 load_balancers,
                 frontend_sd)
+
+
+# setting up frontend
+name = "trader"
+image_name = trader_image_name
+cpu = '256'
+memory = 1024
+port = 3000
+
+port_mappings=[{"containerPort": port, "protocol": "tcp"}]
+(alb, _, load_balancers) = make_alb(name, app_vpc, subnets, security_groups, port, "HTTP")
+make_service(app_cluster, app_exec_role, app_task_role,
+                name,
+                subnets,
+                security_groups,
+                availability_zone,
+                image_name,
+                cpu,
+                memory,
+                port_mappings,
+                ecs_env,
+                logs_group_name,
+                [],
+                load_balancers,
+                frontend_sd)
+
+
 
 frontend_public_url = pulumi.Output.concat("http://", alb.dns_name, ":8501")
 pulumi.export("frontend_public_url", frontend_public_url)

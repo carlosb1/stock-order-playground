@@ -71,6 +71,7 @@ async fn delete_workers(
 ) -> Result<Json<Vec<(String, String)>>, StatusCode> {
     let mut result = Vec::with_capacity(name_workers.len());
 
+    tracing::info!("deleting worker {:?}", name_workers);
     for name in name_workers {
         match arc_state.workers.remove(&name) {
             // remove gives you ownership; no guards alive
@@ -117,6 +118,7 @@ async fn post_workers(
     let mut resp = Vec::with_capacity(name_workers.len());
 
     for (name, _cfg) in name_workers {
+        tracing::info!("trying adding worker {:?}", name);
         if !all_workers().contains(&name.as_str()) {
             resp.push((name, "NOTEXIST".into()));
             continue;
@@ -126,6 +128,8 @@ async fn post_workers(
             resp.push((name, "INNER_BAD_NAME".into()));
             continue;
         };
+        tracing::info!("adding worker {:?}", name);
+
 
         match state.workers.entry(name.clone()) {
             Entry::Occupied(_) => {
